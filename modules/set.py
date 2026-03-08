@@ -48,4 +48,23 @@ def update_set(set_id, owner_id, title=None, description=None, is_public=None):
     )
 
 
-from db.modules.sets import (get_user_set, get_user_sets, delete_set)
+from db.modules.sets import (search_set, get_user_set, get_user_sets, delete_set)
+
+
+def getWords(set_id):
+    responses = _db_modules.words.getWords(set_id)
+    result = []
+    for response in responses:
+        meaning = list(map(int, response.get("meaning")))
+        wordDetail = _db_modules.words.get_detail(response.get('word_id'))
+        definitions = wordDetail.get('definitions', [])
+
+        temp = { 
+            "id": wordDetail.get('_id'),
+            "word": wordDetail.get("word"),
+            "meaning": meaning,
+            "ko": [definition.get('ko') for definition in definitions]
+        }
+        result.append(temp)
+    
+    return result

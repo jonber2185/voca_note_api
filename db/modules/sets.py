@@ -1,5 +1,15 @@
 from db.mySQL import run_sql
 
+def search_set(title):
+    if not title: return []
+    result = run_sql(
+        "SELECT * FROM sets WHERE title LIKE %s ORDER BY created_at DESC LIMIT 20",
+        (f"%{title}%",),
+    )
+    if result is None: return []
+    else: return result
+
+
 def get_user_sets(user_id) -> list:
     result = run_sql(
         "SELECT * FROM sets WHERE owner_id = %s ORDER BY created_at DESC",

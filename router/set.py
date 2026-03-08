@@ -46,7 +46,7 @@ def get_set_detail(username, set_id):
     user_set = modules.set.get_user_set(set_id, username)
     if user_set.get('is_public', 0) == 0 and username != identity: 
         raise base.ForbiddenError()
-    words = modules.word.getWords(set_id)
+    words = modules.set.getWords(set_id)
 
     return jsonify({
         "set_info": user_set ,

@@ -25,10 +25,18 @@ def get_gemini_response(words: list) -> dict:
             max_output_tokens=8000,
         )
     )
-
+    res_text = response.text.strip()
+    
+    if res_text.startswith("```json"):
+        res_text = res_text[7:] # 앞의 ```json 제거
+    if res_text.endswith("```"):
+        res_text = res_text[:-3] # 뒤의 ``` 제거
+        
+    res_text = res_text.strip() # 남은 공백 제거
+    
     try:
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"\n\nJSON Parsing Error: {e}")
-        print(f"Raw Response: {response.text}\n\n")
+        return json.loads(res_text)
+    except json.JSONDecodeError as e:
+        print(f"JSON Parsing Error: {e}")
+        print(f"Raw Response: {res_text}")
         raise e

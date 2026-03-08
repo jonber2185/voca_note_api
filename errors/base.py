@@ -15,7 +15,7 @@ class AuthError(AppError):
 # ID 비번 불일치 에러
 class LoginDisagreementError(AuthError):
     def __init__(self):
-        super().__init__("Invalid ID or password.")
+        super().__init__("아이디 또는 비밀번호가 일치하지 않습니다.")
 
 # 토큰 관련 에러
 class SessionTokenError(AuthError):
@@ -48,7 +48,7 @@ class UserValidationError(UserError):
 # ID 중복 에러
 class UserUniqueError(UserError):
     def __init__(self):
-        super().__init__("ID already exists.", status_code=409)
+        super().__init__("중복된 아이디입니다.", status_code=409)
 
 
 ### SET_ERROR

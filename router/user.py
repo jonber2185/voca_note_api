@@ -6,26 +6,59 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 UserRouter = Blueprint('user', __name__)
 
 
+@UserRouter.route('/me', methods=['GET'])
+@jwt_required()
+def webRefresh():
+    identity = get_jwt_identity()
+    userinfo = modules.user.get_user(identity)
+
+    return jsonify({
+        "user_id": identity,
+        "username": userinfo.get("username", "")
+    }), 200
+
 @UserRouter.route('/create', methods=['POST'])
 def create_user():
     data = request.get_json(silent=True)
     if data is None: raise base.UserValidationError("data empty.")
 
     user_id = data.get('user_id')
+    username = data.get('username')
     password = data.get('password')
-    if not all([user_id, password]):
+    if not all([user_id, username, password]):
         raise base.UserValidationError("Invalid format.")
 
     modules.user.create_user(
         user_id=user_id,
+        username=username,
         password=password
     )
     return jsonify({"message": "user created"}), 201
 
 
+@UserRouter.route('/update_username',methods=['POST'])
+@jwt_required()
+def update_username():
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True)
+    if data is None: raise base.UserValidationError("empty data.")
+    current_password = data.get('current_password')
+    new_username = data.get('new_username')
+
+    if not all([current_password, new_username]):
+        raise base.UserValidationError("Missing required argument.")
+    
+    modules.auth.login(input_id=user_id, input_password=current_password)
+    modules.user.update_user_password(
+        user_id=user_id,
+        new_password=new_username
+    )
+    return jsonify({ "message": "Profile updated successfully." }), 201
+
+
 @UserRouter.route('/update_password',methods=['POST'])
 @jwt_required()
-def update_user():
+def update_user_password():
     user_id = get_jwt_identity()
     data = request.get_json(silent=True)
     if data is None: raise base.UserValidationError("empty data.")

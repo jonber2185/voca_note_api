@@ -32,32 +32,43 @@ def login(input_id: str, input_password: str):
         password=input_password.encode('utf-8'), 
         hashed_password=user_password.encode('utf-8')
     )
-
     if not isCorrect: raise _errors.LoginDisagreementError()
-    ### 로그인 성공
+
+    return user_info.get("username", "")
 
 
 ### tokens
 
-def login_tokens(identity: str) -> list:
+def login_tokens(identity: str, device_id: str) -> list:
+    if device_id is None:
+        raise _errors.SessionTokenError("device_id is empty")
+    if len(device_id) > 20:
+        raise _errors.SessionTokenError("device_id must be 20 or less")
+        
     # token 발급
     access_token = _create_access_token(identity=identity)
     refresh_token = _create_refresh_token(identity=identity)
     new_hashed_refresh_token = _sha256(refresh_token.encode()).hexdigest()  
 
     # db에 새로운 refresh_token 저장
-    _db_modules.auth.set_new_refresh_token(user_id=identity, token=new_hashed_refresh_token)
+    _db_modules.auth.set_new_refresh_token(
+        user_id=identity, 
+        device_id=device_id,
+        token=new_hashed_refresh_token
+    )
 
     #token 반환
     return [access_token, refresh_token]
 
-def update_tokens(input_refresh_token: str, identity: str) -> list:
+def update_tokens(input_refresh_token: str, identity: str, device_id: str) -> list:
     # refresh_token 유효 검증
     if not input_refresh_token:
         raise _errors.SessionTokenError("refresh token is required")
+    if device_id == "":
+        raise _errors.SessionTokenError("device_id is empty")
 
     hashed_refresh_token = _sha256(input_refresh_token.encode()).hexdigest()    
-    stored_refresh_token = _db_modules.auth.get_token_by_user_id(identity)
+    stored_refresh_token = _db_modules.auth.get_token_by_user_id(identity, device_id)
 
     if stored_refresh_token != hashed_refresh_token:
         raise _errors.SessionTokenError("Invalid refresh token")
@@ -68,7 +79,11 @@ def update_tokens(input_refresh_token: str, identity: str) -> list:
     new_hashed_refresh_token = _sha256(refresh_token.encode()).hexdigest()  
 
     # db에 새로운 refresh_token 저장
-    _db_modules.auth.set_new_refresh_token(user_id=identity, token=new_hashed_refresh_token)
+    _db_modules.auth.set_new_refresh_token(
+        user_id=identity, 
+        device_id=device_id,
+        token=new_hashed_refresh_token
+    )
 
     # refresh_token 반환
     return [access_token, refresh_token]
