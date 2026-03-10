@@ -29,6 +29,7 @@ app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_COOKIE_HTTPONLY"] = True
 app.config["JWT_COOKIE_SECURE"] = True
 app.config['JWT_COOKIE_SAMESITE'] = 'None'
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_REFRESH_COOKIE_PATH"] = "/"
 app.config["JWT_ACCESS_COOKIE_NAME"] = "access_token"

@@ -7,7 +7,6 @@ from flask_jwt_extended import (
     set_access_cookies, 
     set_refresh_cookies, 
     unset_jwt_cookies,
-    verify_jwt_in_request,
 )
 
 
