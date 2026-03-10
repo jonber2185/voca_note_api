@@ -13,20 +13,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5173"])
+
+CORS(
+    app, 
+    supports_credentials=True, 
+    resources={r"/*": {"origins": os.getenv("FRONT_URL")}},
+)
 
 register_error_handlers(app)
 
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=5)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=10)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_COOKIE_HTTPONLY"] = True
+app.config["JWT_COOKIE_SECURE"] = True
+app.config['JWT_COOKIE_SAMESITE'] = 'None'
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_REFRESH_COOKIE_PATH"] = "/"
-app.config["JWT_COOKIE_CSRF_PROTECT"] = False
-# app.config["JWT_COOKIE_HTTPONLY"] = True
-app.config["JWT_COOKIE_SECURE"] = False
-app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
 app.config["JWT_ACCESS_COOKIE_NAME"] = "access_token"
 app.config["JWT_REFRESH_COOKIE_NAME"] = "refresh_token"
 app.json.ensure_ascii = False

@@ -1,7 +1,14 @@
 import errors.base as base
 import modules
 from flask import Blueprint, request, make_response, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, set_access_cookies, set_refresh_cookies, unset_jwt_cookies
+from flask_jwt_extended import (
+    jwt_required, 
+    get_jwt_identity, 
+    set_access_cookies, 
+    set_refresh_cookies, 
+    unset_jwt_cookies,
+    verify_jwt_in_request,
+)
 
 
 AuthRouter = Blueprint('auth', __name__)
@@ -19,7 +26,7 @@ def login():
         raise base.AuthError("ID or password cannot be empty.")
 
     # 로그인 시도. 실패 시 raise
-    username = modules.auth.login(input_id=input_id, input_password=input_password)
+    modules.auth.login(input_id=input_id, input_password=input_password)
 
     # 토큰 발급
     [access_token, refresh_token] = modules.auth.login_tokens(input_id, device_id)
@@ -27,7 +34,6 @@ def login():
     # token return
     response_data = jsonify({
         "user_id": input_id,
-        "username": username,
         "access_token": access_token,
         "refresh_token": refresh_token
     })
@@ -71,16 +77,19 @@ def webRefresh():
 
 
 @AuthRouter.route('/logout', methods=['POST'])
-@jwt_required()
 def logout():
     identity = get_jwt_identity()
-    data = request.get_json(silent=True)
-    if data is None: raise base.AuthError("empty data.")
-    modules.auth.delete_tokens(user_id=identity, device_id=data.get('device_id', ""))
+
+    if identity:
+        data = request.get_json(silent=True) or {}
+        device_id = data.get('device_id', "")
+        if device_id:
+            modules.auth.delete_tokens(user_id=identity, device_id=device_id)
 
     response = jsonify({
         "message": "Successfully logged out."
     })
+    
     unset_jwt_cookies(response)
 
     return response, 200

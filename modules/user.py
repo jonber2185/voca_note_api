@@ -24,10 +24,6 @@ def is_unique_user_id(user_id: str):
     result = _db_modules.users.get_user_id(user_id)
     if result is not None: raise _errors.UserUniqueError()
 
-def is_valid_username(username: str):
-    if len(username) > 30:
-        raise _errors.UserValidationError("이름은 30글자 이하여야 합니다.")
-
 # pw 조건 확인
 def is_valid_password(password: str):
     if len(password) < 8:
@@ -37,20 +33,13 @@ def is_valid_password(password: str):
     if not _re.match(allowed_pw_pattern, password):
         raise _errors.UserValidationError("비밀번호는 영문 대소문자, 숫자, 그리고 특수문자(!@#$%^&*()-_+=[]{}:;,.?)만 사용할 수 있습니다.")
 
-
-def get_user(user_id):
-    userinfo = _db_modules.users.get_user_id(user_id)
-    return userinfo
-
-def create_user(user_id, username, password):
+def create_user(user_id, password):
     is_valid_user_id(user_id) # id 형식 확인
     is_unique_user_id(user_id) # id 중복 확인
-    is_valid_username(username) # username 형식 확인
     is_valid_password(password) # pw 형식 확인
 
     _db_modules.users.create_user(
         user_id=user_id, 
-        username=username,
         hashed_password=_hash_password(password)
     )
 
@@ -59,13 +48,6 @@ def update_user_password(user_id: str, new_password: str):
     _db_modules.users.update_user_password(
         user_id=user_id,
         new_password=_hash_password(new_password)
-    )
-
-def update_username(user_id: str, new_username: str):
-    is_valid_username(new_username)
-    _db_modules.users.update(
-        user_id=user_id,
-        new_password=new_username
     )
 
 def delete_user(user_id: str):

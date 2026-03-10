@@ -5,7 +5,7 @@ from db.mySQL import run_sql
 
 def get_password_by_input_id(input_id: str) -> dict:
     result = run_sql(
-        "SELECT username, pw, deleted_at FROM users WHERE user_id = %s",
+        "SELECT pw, deleted_at FROM users WHERE user_id = %s",
         (input_id,),
         fetchone=True
     )

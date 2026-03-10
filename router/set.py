@@ -7,23 +7,23 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 SetRouter = Blueprint('set', __name__)
 
-@SetRouter.route('/<username>', methods=['GET'])
+@SetRouter.route('/<user_id>', methods=['GET'])
 @jwt_required(optional=True)
-def get_sets(username):
+def get_sets(user_id):
     identity = get_jwt_identity()
-    user_sets = modules.set.get_user_sets(username)
+    user_sets = modules.set.get_user_sets(user_id)
 
     result = []
-    if username == identity: result = user_sets
+    if user_id == identity: result = user_sets
     else: result = [s for s in user_sets if s['is_public'] == 1]
     return jsonify({"sets": result}), 200
 
 
-@SetRouter.route('/<username>', methods=['POST'])
+@SetRouter.route('/<user_id>', methods=['POST'])
 @jwt_required()
-def create_set(username):
+def create_set(user_id):
     identity = get_jwt_identity()
-    if identity != username: raise base.ForbiddenError()
+    if identity != user_id: raise base.ForbiddenError()
 
     data = request.get_json(silent=True)
     if data is None: raise base.SetValidationError("data empty.")
@@ -39,12 +39,12 @@ def create_set(username):
     return jsonify({ "message": "set created", "set_id": set_id }), 201
 
 
-@SetRouter.route('/<username>/<set_id>', methods=['GET'])
+@SetRouter.route('/<user_id>/<set_id>', methods=['GET'])
 @jwt_required(optional=True)
-def get_set_detail(username, set_id):
+def get_set_detail(user_id, set_id):
     identity = get_jwt_identity()
-    user_set = modules.set.get_user_set(set_id, username)
-    if user_set.get('is_public', 0) == 0 and username != identity: 
+    user_set = modules.set.get_user_set(set_id, user_id)
+    if user_set.get('is_public', 0) == 0 and user_id != identity: 
         raise base.ForbiddenError()
     words = modules.set.getWords(set_id)
 
@@ -54,11 +54,11 @@ def get_set_detail(username, set_id):
     }), 200
 
 
-@SetRouter.route('/<username>/<set_id>', methods=['PATCH'])
+@SetRouter.route('/<user_id>/<set_id>', methods=['PATCH'])
 @jwt_required()
-def update_set_detail(username, set_id):
+def update_set_detail(user_id, set_id):
     identity = get_jwt_identity()
-    if identity != username: raise base.ForbiddenError()
+    if identity != user_id: raise base.ForbiddenError()
 
     data = request.get_json(silent=True)
     if data is None: raise base.SetValidationError("data empty.")
@@ -74,11 +74,11 @@ def update_set_detail(username, set_id):
     return jsonify({"message": "set updated successfully"}), 200
 
 
-@SetRouter.route('/<username>/<set_id>', methods=['DELETE'])
+@SetRouter.route('/<user_id>/<set_id>', methods=['DELETE'])
 @jwt_required()
-def delete_set_detail(username, set_id):
+def delete_set_detail(user_id, set_id):
     identity = get_jwt_identity()
-    if identity != username: raise base.ForbiddenError()
+    if identity != user_id: raise base.ForbiddenError()
 
     modules.set.delete_set(set_id, identity)
 

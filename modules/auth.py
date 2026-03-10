@@ -34,8 +34,6 @@ def login(input_id: str, input_password: str):
     )
     if not isCorrect: raise _errors.LoginDisagreementError()
 
-    return user_info.get("username", "")
-
 
 ### tokens
 

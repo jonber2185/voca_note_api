@@ -38,12 +38,12 @@ def analyzeWords():
     return jsonify(result), 200
 
 
-@WordRouter.route('/<username>/<set_id>', methods=['GET'])
+@WordRouter.route('/<user_id>/<set_id>', methods=['GET'])
 @jwt_required(optional=True)
-def getWords(username, set_id):
+def getWords(user_id, set_id):
     identity = get_jwt_identity()
-    user_set = modules.set.get_user_set(set_id, username)
-    if user_set.get('is_public', 0) == 0 and username != identity: 
+    user_set = modules.set.get_user_set(set_id, user_id)
+    if user_set.get('is_public', 0) == 0 and user_id != identity: 
         raise base.ForbiddenError()
     
     words = modules.word.getWords(set_id)
@@ -51,12 +51,12 @@ def getWords(username, set_id):
     return jsonify(words), 200
     
 
-@WordRouter.route('/<username>/<set_id>/example', methods=['GET'])
+@WordRouter.route('/<user_id>/<set_id>/example', methods=['GET'])
 @jwt_required(optional=True)
-def getWordExamples(username, set_id):
+def getWordExamples(user_id, set_id):
     identity = get_jwt_identity()
-    user_set = modules.set.get_user_set(set_id, username)
-    if user_set.get('is_public', 0) == 0 and username != identity: 
+    user_set = modules.set.get_user_set(set_id, user_id)
+    if user_set.get('is_public', 0) == 0 and user_id != identity: 
         raise base.ForbiddenError()
     
     words = modules.word.getWords(set_id, example=True)
@@ -64,11 +64,11 @@ def getWordExamples(username, set_id):
     return jsonify(words), 200
 
 
-@WordRouter.route('/<username>/<set_id>', methods=['POST'])
+@WordRouter.route('/<user_id>/<set_id>', methods=['POST'])
 @jwt_required()
-def addWords(username, set_id):
+def addWords(user_id, set_id):
     identity = get_jwt_identity()
-    if username != identity: raise base.ForbiddenError()
+    if user_id != identity: raise base.ForbiddenError()
     modules.set.is_valid_set(set_id, identity)
     
     data = request.get_json(silent=True)
@@ -78,11 +78,11 @@ def addWords(username, set_id):
     return jsonify({"message": "words updated"}), 200
     
 
-@WordRouter.route('/<username>/<set_id>', methods=['PATCH'])
+@WordRouter.route('/<user_id>/<set_id>', methods=['PATCH'])
 @jwt_required()
-def editWords(username, set_id):
+def editWords(user_id, set_id):
     identity = get_jwt_identity()
-    if username != identity: raise base.ForbiddenError()
+    if user_id != identity: raise base.ForbiddenError()
     modules.set.is_valid_set(set_id, identity)
     
     data = request.get_json(silent=True)
@@ -92,11 +92,11 @@ def editWords(username, set_id):
     return jsonify({"message": "words updated"}), 200
 
 
-@WordRouter.route('/<username>/<set_id>/<word_id>', methods=['DELETE'])
+@WordRouter.route('/<user_id>/<set_id>/<word_id>', methods=['DELETE'])
 @jwt_required()
-def deleteWords(username, set_id, word_id):
+def deleteWords(user_id, set_id, word_id):
     identity = get_jwt_identity()
-    if username != identity: raise base.ForbiddenError()
+    if user_id != identity: raise base.ForbiddenError()
     modules.set.is_valid_set(set_id, identity)
     
     modules.word.deleteWord(set_id, word_id)
