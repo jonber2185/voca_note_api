@@ -74,21 +74,24 @@ def webRefresh():
         "refresh_token": new_refresh_token
     }), 200
 
-
 @AuthRouter.route('/logout', methods=['POST'])
+@jwt_required(optional=True) # 🔹 토큰이 없어도 에러를 내지 않고 진입 허용
 def logout():
-    identity = get_jwt_identity()
+    identity = get_jwt_identity() # 토큰이 없으면 None 반환
 
+    # 1. 토큰이 있는 경우에만 DB에서 세션 삭제
     if identity:
         data = request.get_json(silent=True) or {}
         device_id = data.get('device_id', "")
         if device_id:
             modules.auth.delete_tokens(user_id=identity, device_id=device_id)
 
+    # 2. 응답 생성
     response = jsonify({
         "message": "Successfully logged out."
     })
     
+    # 3. 🔹 토큰 유무와 상관없이 브라우저에 남은 쿠키를 강제로 만료시킴
     unset_jwt_cookies(response)
 
     return response, 200
